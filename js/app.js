@@ -1,95 +1,106 @@
-const CONFIG = {
-  // Sustituir por la URL /exec del Apps Script desplegado como Web App
-  endpoint: "PASTE_APPS_SCRIPT_WEB_APP_URL_HERE",
-  locals: {
-    belcebu: "Belcebú",
-    pecat: "El Pecat de Belcebú"
-  }
-};
+document.addEventListener('DOMContentLoaded', () => {
+  const API_URL = "https://YOUR_GOOGLE_APPS_SCRIPT_URL/exec";
 
-const qs = new URLSearchParams(window.location.search);
-const localParam = (qs.get("local") || "belcebu").toLowerCase();
-const localKey = CONFIG.locals[localParam] ? localParam : "belcebu";
+  const form = document.querySelector('#participation-form');
+  const messageContainer = document.querySelector('#form-message');
+  const localDisplayElements = document.querySelectorAll('.local-name');
+  const submitBtn = form.querySelector('button[type="submit"]');
 
-const form = document.getElementById("entryForm");
-const result = document.getElementById("result");
-const submitBtn = document.getElementById("submitBtn");
-const localInput = document.getElementById("local");
-const localName = document.getElementById("localName");
+  const urlParams = new URLSearchParams(window.location.search);
+  const rawLocal = (urlParams.get('local') || 'belcebu').toLowerCase();
 
-localInput.value = localKey;
-localName.textContent = CONFIG.locals[localKey];
+  const local = rawLocal === 'pecat' ? 'pecat' : 'belcebu';
+  const displayName = local === 'pecat' ? 'EL PECAT' : 'BELCEBÚ';
 
-function setResult(message, type) {
-  result.textContent = message;
-  result.className = `result ${type || ""}`.trim();
-}
+  localDisplayElements.forEach(el => {
+    el.textContent = displayName;
+  });
 
-function clean(value) {
-  return String(value || "").trim();
-}
+  const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
-function validateEmail(email) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-}
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    hideMessage();
 
-form.addEventListener("submit", async (event) => {
-  event.preventDefault();
-  setResult("", "");
+    const formData = new FormData(form);
 
-  const payload = {
-    local: clean(localInput.value),
-    name: clean(document.getElementById("name").value),
-    phone: clean(document.getElementById("phone").value),
-    email: clean(document.getElementById("email").value).toLowerCase(),
-    ticket: clean(document.getElementById("ticket").value).toUpperCase(),
-    acceptRules: document.getElementById("acceptRules").checked,
-    acceptPrivacy: document.getElementById("acceptPrivacy").checked,
-    acceptMarketing: document.getElementById("acceptMarketing").checked,
-    website: clean(document.getElementById("website").value)
-  };
+    const payload = {
+      local,
+      nombre: String(formData.get('nombre') || '').trim(),
+      telefono: String(formData.get('telefono') || '').trim(),
+      email: String(formData.get('email') || '').trim(),
+      ticket: String(formData.get('ticket') || '').trim(),
+      aceptaPrivacidad: formData.get('aceptaPrivacidad') === 'on',
+      aceptaBases: formData.get('aceptaBases') === 'on',
+      aceptaPromociones: formData.get('aceptaPromociones') === 'on',
+      origen: window.location.href,
+      userAgent: navigator.userAgent,
+      timestampCliente: new Date().toISOString()
+    };
 
-  if (!payload.name || !payload.phone || !payload.email || !payload.ticket) {
-    setResult("Revisa los campos obligatorios antes de participar.", "error");
-    return;
-  }
-  if (!validateEmail(payload.email)) {
-    setResult("Introduce un email válido.", "error");
-    return;
-  }
-  if (!payload.acceptRules || !payload.acceptPrivacy) {
-    setResult("Para participar debes aceptar las bases legales y la política de privacidad.", "error");
-    return;
-  }
-  if (CONFIG.endpoint.includes("PASTE_APPS_SCRIPT")) {
-    setResult("Falta configurar la URL del Apps Script en js/app.js.", "error");
-    return;
-  }
-
-  submitBtn.disabled = true;
-  submitBtn.textContent = "Enviando...";
-
-  try {
-    const response = await fetch(CONFIG.endpoint, {
-      method: "POST",
-      mode: "cors",
-      headers: { "Content-Type": "text/plain;charset=utf-8" },
-      body: JSON.stringify(payload)
-    });
-
-    const data = await response.json();
-
-    if (data.ok) {
-      setResult(data.message || "Participación registrada correctamente. ¡Suerte!", "ok");
-      form.reset();
-      localInput.value = localKey;
-    } else {
-      setResult(data.message || "No se ha podido registrar la participación.", "error");
+    if (!payload.nombre || !payload.telefono || !payload.email || !payload.ticket) {
+      showMessage('Completa todos los campos obligatorios.', 'error');
+      return;
     }
-  } catch (error) {
-    setResult("Ha ocurrido un error al enviar. Prueba de nuevo o avisa al personal del local.", "error");
-  } finally {
-    submitBtn.disabled = false;
-    submitBtn.textContent = "Enviar participación";
+
+    if (!isValidEmail(payload.email)) {
+      showMessage('Introduce un correo electrónico válido.', 'error');
+      return;
+    }
+
+    if (!payload.aceptaPrivacidad || !payload.aceptaBases) {
+      showMessage('Debes aceptar la política de privacidad y las bases legales para participar.', 'error');
+      return;
+    }
+
+    if (API_URL.includes('YOUR_GOOGLE_APPS_SCRIPT_URL')) {
+      showMessage('Falta configurar la URL de Google Apps Script.', 'error');
+      return;
+    }
+
+    const originalText = submitBtn.textContent;
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Enviando...';
+
+    try {
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'text/plain;charset=utf-8'
+        },
+        body: JSON.stringify(payload)
+      });
+
+      const result = await response.json();
+
+      if (!result.ok) {
+        showMessage(result.message || 'No se ha podido registrar la participación.', 'error');
+        return;
+      }
+
+      showMessage(result.message || '¡Participación registrada con éxito! Mucha suerte.', 'success');
+      form.reset();
+
+    } catch (error) {
+      console.error(error);
+      showMessage('Error de conexión. Inténtalo de nuevo en unos minutos.', 'error');
+
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = originalText;
+    }
+  });
+
+  function showMessage(text, type) {
+    messageContainer.textContent = text;
+    messageContainer.className = `message ${type}`;
+    messageContainer.style.display = 'block';
+    messageContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  function hideMessage() {
+    messageContainer.textContent = '';
+    messageContainer.className = 'message';
+    messageContainer.style.display = 'none';
   }
 });
