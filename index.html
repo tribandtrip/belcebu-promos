@@ -1,107 +1,144 @@
-document.addEventListener('DOMContentLoaded', () => {
-const API_URL = "https://YOUR_GOOGLE_APPS_SCRIPT_URL/exec";
+<!DOCTYPE html>
+<html lang="es">
 
-const form = document.querySelector('#participation-form');
-const messageContainer = document.querySelector('#form-message');
-const localDisplayElements = document.querySelectorAll('.local-name');
-const submitBtn = form.querySelector('button[type="submit"]');
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>La Ruta de la Tentación | Belcebú</title>
 
-const urlParams = new URLSearchParams(window.location.search);
-const rawLocal = (urlParams.get('local') || 'belcebu').toLowerCase();
+  <meta name="description"
+    content="Descubre nuestra tapa especial con bebida por solo 4€ y participa en los sorteos exclusivos de Belcebú." />
 
-const local = rawLocal === 'pecat' ? 'pecat' : 'belcebu';
-const displayName = local === 'pecat' ? 'EL PECAT' : 'BELCEBÚ';
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@500;600;700&display=swap"
+    rel="stylesheet">
 
-localDisplayElements.forEach(el => {
-el.textContent = displayName;
-});
+  <link rel="stylesheet" href="css/styles.css" />
+  <script src="js/app.js" defer></script>
+</head>
 
-const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+<body>
+  <div id="app">
+    <header class="col hero-section">
+      <div class="brand-logo">BELCEBÚ</div>
+      <h1 class="hero-title">LA RUTA DE<br>LA TENTACIÓN</h1>
+      <p class="hero-subtitle">El pecado del jueves</p>
+      <p class="hero-description">
+        Descubre nuestra tapa especial con bebida por solo <strong>4€</strong>
+        y participa en los sorteos exclusivos de Belcebú.
+      </p>
+    </header>
 
-form.addEventListener('submit', async (event) => {
-event.preventDefault();
+    <main class="col content-section">
+      <section class="section-block">
+        <h2 class="section-title">Cómo funciona</h2>
 
-hideMessage();
+        <div class="steps-list">
+          <article class="step-card">
+            <div class="step-num">01</div>
+            <div class="step-content">
+              <strong>Prueba la tapa</strong>
+              <p>Disfruta de la propuesta especial del jueves en <span class="local-name">BELCEBÚ</span>.</p>
+            </div>
+          </article>
 
-const formData = new FormData(form);
+          <article class="step-card">
+            <div class="step-num">02</div>
+            <div class="step-content">
+              <strong>Guarda tu ticket</strong>
+              <p>Introduce el número de ticket para registrar tu participación.</p>
+            </div>
+          </article>
 
-const payload = {
-local,
-nombre: String(formData.get('nombre') || '').trim(),
-telefono: String(formData.get('telefono') || '').trim(),
-email: String(formData.get('email') || '').trim(),
-ticket: String(formData.get('ticket') || '').trim(),
-aceptaPrivacidad: formData.get('aceptaPrivacidad') === 'on',
-aceptaBases: formData.get('aceptaBases') === 'on',
-aceptaPromociones: formData.get('aceptaPromociones') === 'on',
-origen: window.location.href,
-userAgent: navigator.userAgent,
-timestampCliente: new Date().toISOString()
-};
+          <article class="step-card">
+            <div class="step-num">03</div>
+            <div class="step-content">
+              <strong>Participa y gana</strong>
+              <p>Cada ticket válido suma una oportunidad en los sorteos.</p>
+            </div>
+          </article>
+        </div>
+      </section>
 
-if (!payload.nombre || !payload.telefono || !payload.email || !payload.ticket) {
-showMessage('Completa todos los campos obligatorios.', 'error');
-return;
-}
+      <section class="section-block">
+        <h2 class="section-title">Premios</h2>
 
-if (!isValidEmail(payload.email)) {
-showMessage('Introduce un correo electrónico válido.', 'error');
-return;
-}
+        <div class="prize-grid">
+          <div class="prize-item">
+            <strong>Almuerzos para dos</strong>
+            <small>Para disfrutar sin prisa.</small>
+          </div>
 
-if (!payload.aceptaPrivacidad || !payload.aceptaBases) {
-showMessage('Debes aceptar la política de privacidad y las bases legales para participar.', 'error');
-return;
-}
+          <div class="prize-item">
+            <strong>Comidas para dos</strong>
+            <small>Una experiencia para compartir.</small>
+          </div>
 
-if (API_URL.includes('YOUR_GOOGLE_APPS_SCRIPT_URL')) {
-showMessage('Falta configurar la URL de Google Apps Script.', 'error');
-return;
-}
+          <div class="prize-item full-width">
+            <strong>Cenas para dos</strong>
+            <small>El premio grande para quienes caen en la tentación.</small>
+          </div>
+        </div>
+      </section>
+    </main>
 
-const originalText = submitBtn.textContent;
-submitBtn.disabled = true;
-submitBtn.textContent = 'Enviando...';
+    <section class="col form-section">
+      <h2 class="section-title">Participa</h2>
 
-try {
-const response = await fetch(API_URL, {
-method: 'POST',
-headers: {
-'Content-Type': 'text/plain;charset=utf-8'
-},
-body: JSON.stringify(payload)
-});
+      <p class="local-display">
+        Local: <strong class="local-name">BELCEBÚ</strong>
+      </p>
 
-const result = await response.json();
+      <form id="participation-form">
+        <div class="input-group">
+          <label class="label" for="nombre">Nombre *</label>
+          <input class="input" id="nombre" name="nombre" type="text" required />
+        </div>
 
-if (!result.ok) {
-showMessage(result.message || 'No se ha podido registrar la participación.', 'error');
-return;
-}
+        <div class="input-group">
+          <label class="label" for="telefono">Teléfono *</label>
+          <input class="input" id="telefono" name="telefono" type="tel" required />
+        </div>
 
-showMessage(result.message || '¡Participación registrada con éxito! Mucha suerte.', 'success');
-form.reset();
+        <div class="input-group">
+          <label class="label" for="email">Correo electrónico *</label>
+          <input class="input" id="email" name="email" type="email" required />
+        </div>
 
-} catch (error) {
-console.error(error);
-showMessage('Error de conexión. Inténtalo de nuevo en unos minutos.', 'error');
+        <div class="input-group">
+          <label class="label" for="ticket">Número de ticket *</label>
+          <input class="input" id="ticket" name="ticket" type="text" required />
+        </div>
 
-} finally {
-submitBtn.disabled = false;
-submitBtn.textContent = originalText;
-}
-});
+        <div class="checkbox-group">
+          <label class="checkbox-item">
+            <input type="checkbox" name="aceptaPrivacidad" required />
+            <span>Acepto la política de privacidad y RGPD *</span>
+          </label>
 
-function showMessage(text, type) {
-messageContainer.textContent = text;
-messageContainer.className = `message ${type}`;
-messageContainer.style.display = 'block';
-messageContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
-}
+          <label class="checkbox-item">
+            <input type="checkbox" name="aceptaBases" required />
+            <span>Acepto las bases legales del sorteo *</span>
+          </label>
 
-function hideMessage() {
-messageContainer.textContent = '';
-messageContainer.className = 'message';
-messageContainer.style.display = 'none';
-}
-});
+          <label class="checkbox-item">
+            <input type="checkbox" name="aceptaPromociones" />
+            <span>Deseo recibir ofertas y promociones</span>
+          </label>
+        </div>
+
+        <button class="btn-submit" type="submit">Enviar participación</button>
+
+        <div id="form-message" class="message"></div>
+      </form>
+    </section>
+  </div>
+
+  <footer class="main-footer">
+    © 2026 Belcebú · La Ruta de la Tentación
+  </footer>
+</body>
+
+</html>
