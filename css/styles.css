@@ -1,0 +1,160 @@
+:root {
+  --bg: #140907;
+  --card: rgba(255, 248, 236, 0.96);
+  --text: #24120f;
+  --muted: #6f5a52;
+  --accent: #c4934b;
+  --accent-dark: #7a3b23;
+  --danger: #8f1f1f;
+  --ok: #1d6b3a;
+  --line: rgba(36, 18, 15, 0.14);
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: var(--text);
+  background:
+    radial-gradient(circle at 15% 10%, rgba(196,147,75,.25), transparent 32%),
+    radial-gradient(circle at 85% 0%, rgba(122,59,35,.35), transparent 28%),
+    linear-gradient(135deg, #160704, #2b120b 45%, #080302);
+  min-height: 100vh;
+}
+
+.page-shell {
+  width: min(1080px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 32px 0 48px;
+  display: grid;
+  gap: 20px;
+}
+
+.hero-card, .form-card, .legal-card {
+  background: var(--card);
+  border: 1px solid rgba(255,255,255,.25);
+  border-radius: 28px;
+  box-shadow: 0 24px 80px rgba(0,0,0,.35);
+  padding: clamp(24px, 4vw, 48px);
+}
+
+.hero-card { text-align: center; position: relative; overflow: hidden; }
+.hero-card::after {
+  content: "";
+  position: absolute;
+  inset: auto -20% -40% -20%;
+  height: 180px;
+  background: radial-gradient(circle, rgba(196,147,75,.22), transparent 62%);
+  pointer-events: none;
+}
+
+.badge {
+  display: inline-flex;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: #24120f;
+  color: #fff4df;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: .02em;
+}
+
+.eyebrow {
+  color: var(--accent-dark);
+  text-transform: uppercase;
+  letter-spacing: .12em;
+  font-size: 13px;
+  font-weight: 800;
+  margin: 24px 0 8px;
+}
+
+h1 {
+  font-family: "Playfair Display", serif;
+  font-size: clamp(44px, 7vw, 78px);
+  line-height: .95;
+  margin: 0;
+}
+
+.lead {
+  width: min(680px, 100%);
+  margin: 20px auto 0;
+  color: var(--muted);
+  font-size: clamp(17px, 2vw, 21px);
+  line-height: 1.55;
+}
+
+.promo-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 28px;
+}
+
+.promo-grid article {
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  padding: 20px;
+  background: rgba(255,255,255,.5);
+}
+.promo-grid span { font-size: 32px; }
+.promo-grid h2 { margin: 10px 0 6px; font-size: 18px; }
+.promo-grid p { margin: 0; color: var(--muted); line-height: 1.45; }
+
+.local-notice {
+  margin: 28px auto 0;
+  width: fit-content;
+  max-width: 100%;
+  border: 1px dashed rgba(122,59,35,.45);
+  padding: 12px 16px;
+  border-radius: 16px;
+  background: rgba(196,147,75,.12);
+}
+
+.form-card h2, .legal-card h2 { margin: 0 0 8px; font-size: 28px; }
+.form-intro { margin: 0 0 24px; color: var(--muted); line-height: 1.5; }
+
+form { display: grid; gap: 12px; }
+label { font-weight: 700; }
+input[type="text"], input[type="tel"], input[type="email"] {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 15px 16px;
+  font: inherit;
+  background: #fff;
+}
+input:focus {
+  outline: 3px solid rgba(196,147,75,.28);
+  border-color: var(--accent);
+}
+.checks { display: grid; gap: 10px; margin-top: 8px; }
+.checks label { font-weight: 500; color: var(--muted); line-height: 1.4; }
+.checks input { margin-right: 8px; transform: translateY(1px); }
+
+button {
+  margin-top: 12px;
+  border: none;
+  border-radius: 18px;
+  padding: 16px 20px;
+  background: linear-gradient(135deg, var(--accent-dark), #24120f);
+  color: white;
+  font-weight: 800;
+  font-size: 16px;
+  cursor: pointer;
+  box-shadow: 0 12px 28px rgba(122,59,35,.25);
+}
+button:disabled { opacity: .6; cursor: not-allowed; }
+
+.small-print { color: var(--muted); font-size: 13px; line-height: 1.45; }
+.result { margin-top: 18px; padding: 0; font-weight: 700; }
+.result.ok { color: var(--ok); }
+.result.error { color: var(--danger); }
+
+.legal-card ul { margin: 12px 0 0; padding-left: 20px; color: var(--muted); line-height: 1.65; }
+.honeypot { display: none !important; }
+
+@media (max-width: 720px) {
+  .page-shell { width: min(100% - 20px, 1080px); padding-top: 16px; }
+  .promo-grid { grid-template-columns: 1fr; }
+  .hero-card, .form-card, .legal-card { border-radius: 22px; }
+}
