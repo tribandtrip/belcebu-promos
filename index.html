@@ -1,93 +1,107 @@
-<!doctype html>
-<html lang="es">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Ruta Secreta Belcebú</title>
-  <meta name="description" content="Prueba la tapa Belcebú, guarda tu ticket y participa en sorteos especiales." />
+document.addEventListener('DOMContentLoaded', () => {
+const API_URL = "https://YOUR_GOOGLE_APPS_SCRIPT_URL/exec";
 
-  <!-- Open Graph / WhatsApp preview -->
-  <meta property="og:title" content="Ruta Secreta Belcebú" />
-  <meta property="og:description" content="Tapa + bebida por 4€ y sorteos especiales en Belcebú y El Pecat de Belcebú." />
-  <meta property="og:image" content="https://promociones.belcebu.rest/assets/og-ruta-secreta.jpg" />
-  <meta property="og:type" content="website" />
-  <meta property="og:locale" content="es_ES" />
+const form = document.querySelector('#participation-form');
+const messageContainer = document.querySelector('#form-message');
+const localDisplayElements = document.querySelectorAll('.local-name');
+const submitBtn = form.querySelector('button[type="submit"]');
 
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/styles.css" />
-</head>
-<body>
-  <main class="page-shell">
-    <section class="hero-card">
-      <div class="badge">Promoción especial</div>
-      <p class="eyebrow">Belcebú · El Pecat de Belcebú</p>
-      <h1>Ruta Secreta Belcebú</h1>
-      <p class="lead">Prueba nuestra tapa especial con bebida por <strong>4€</strong>, guarda tu ticket y participa en sorteos para volver a disfrutar.</p>
+const urlParams = new URLSearchParams(window.location.search);
+const rawLocal = (urlParams.get('local') || 'belcebu').toLowerCase();
 
-      <div class="promo-grid">
-        <article>
-          <span>🔥</span>
-          <h2>1 ticket válido</h2>
-          <p>Participas en el sorteo del local donde has consumido.</p>
-        </article>
-        <article>
-          <span>🍽️</span>
-          <h2>2 locales</h2>
-          <p>Si participas en ambos locales, también entras en el sorteo especial.</p>
-        </article>
-      </div>
+const local = rawLocal === 'pecat' ? 'pecat' : 'belcebu';
+const displayName = local === 'pecat' ? 'EL PECAT' : 'BELCEBÚ';
 
-      <div class="local-notice" id="localNotice">
-        Participación para: <strong id="localName">Belcebú</strong>
-      </div>
-    </section>
+localDisplayElements.forEach(el => {
+el.textContent = displayName;
+});
 
-    <section class="form-card" aria-labelledby="formTitle">
-      <h2 id="formTitle">Participa en el sorteo</h2>
-      <p class="form-intro">Rellena tus datos y el número de ticket. Solo será válido el primer registro de cada ticket.</p>
+const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
-      <form id="entryForm" novalidate>
-        <input type="hidden" id="local" name="local" value="belcebu" />
-        <input type="text" id="website" name="website" autocomplete="off" tabindex="-1" aria-hidden="true" class="honeypot" />
+form.addEventListener('submit', async (event) => {
+event.preventDefault();
 
-        <label for="name">Nombre</label>
-        <input id="name" name="name" type="text" placeholder="Tu nombre" required maxlength="80" />
+hideMessage();
 
-        <label for="phone">Teléfono</label>
-        <input id="phone" name="phone" type="tel" placeholder="Ej. 600 000 000" required maxlength="20" />
+const formData = new FormData(form);
 
-        <label for="email">Email</label>
-        <input id="email" name="email" type="email" placeholder="tu@email.com" required maxlength="120" />
+const payload = {
+local,
+nombre: String(formData.get('nombre') || '').trim(),
+telefono: String(formData.get('telefono') || '').trim(),
+email: String(formData.get('email') || '').trim(),
+ticket: String(formData.get('ticket') || '').trim(),
+aceptaPrivacidad: formData.get('aceptaPrivacidad') === 'on',
+aceptaBases: formData.get('aceptaBases') === 'on',
+aceptaPromociones: formData.get('aceptaPromociones') === 'on',
+origen: window.location.href,
+userAgent: navigator.userAgent,
+timestampCliente: new Date().toISOString()
+};
 
-        <label for="ticket">Nº de ticket</label>
-        <input id="ticket" name="ticket" type="text" placeholder="Ej. 004582" required maxlength="40" />
+if (!payload.nombre || !payload.telefono || !payload.email || !payload.ticket) {
+showMessage('Completa todos los campos obligatorios.', 'error');
+return;
+}
 
-        <div class="checks">
-          <label><input type="checkbox" id="acceptRules" required /> Acepto las bases legales del sorteo.</label>
-          <label><input type="checkbox" id="acceptPrivacy" required /> Acepto la política de privacidad.</label>
-          <label><input type="checkbox" id="acceptMarketing" /> Acepto recibir promociones y comunicaciones comerciales de Belcebú.</label>
-        </div>
+if (!isValidEmail(payload.email)) {
+showMessage('Introduce un correo electrónico válido.', 'error');
+return;
+}
 
-        <button type="submit" id="submitBtn">Enviar participación</button>
-        <p class="small-print">Tus datos se utilizarán para gestionar el sorteo y, si lo aceptas, enviarte promociones de Belcebú.</p>
-      </form>
+if (!payload.aceptaPrivacidad || !payload.aceptaBases) {
+showMessage('Debes aceptar la política de privacidad y las bases legales para participar.', 'error');
+return;
+}
 
-      <div id="result" class="result" role="status" aria-live="polite"></div>
-    </section>
+if (API_URL.includes('YOUR_GOOGLE_APPS_SCRIPT_URL')) {
+showMessage('Falta configurar la URL de Google Apps Script.', 'error');
+return;
+}
 
-    <section class="legal-card">
-      <h2>Bases rápidas</h2>
-      <ul>
-        <li>Cada número de ticket solo puede utilizarse una vez.</li>
-        <li>En caso de duplicidad, será válida la primera participación registrada.</li>
-        <li>El establecimiento podrá comprobar la validez del ticket antes de entregar el premio.</li>
-        <li>Las participaciones falsas, incompletas o duplicadas podrán ser descartadas.</li>
-      </ul>
-    </section>
-  </main>
+const originalText = submitBtn.textContent;
+submitBtn.disabled = true;
+submitBtn.textContent = 'Enviando...';
 
-  <script src="js/app.js"></script>
-</body>
-</html>
+try {
+const response = await fetch(API_URL, {
+method: 'POST',
+headers: {
+'Content-Type': 'text/plain;charset=utf-8'
+},
+body: JSON.stringify(payload)
+});
+
+const result = await response.json();
+
+if (!result.ok) {
+showMessage(result.message || 'No se ha podido registrar la participación.', 'error');
+return;
+}
+
+showMessage(result.message || '¡Participación registrada con éxito! Mucha suerte.', 'success');
+form.reset();
+
+} catch (error) {
+console.error(error);
+showMessage('Error de conexión. Inténtalo de nuevo en unos minutos.', 'error');
+
+} finally {
+submitBtn.disabled = false;
+submitBtn.textContent = originalText;
+}
+});
+
+function showMessage(text, type) {
+messageContainer.textContent = text;
+messageContainer.className = `message ${type}`;
+messageContainer.style.display = 'block';
+messageContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function hideMessage() {
+messageContainer.textContent = '';
+messageContainer.className = 'message';
+messageContainer.style.display = 'none';
+}
+});
