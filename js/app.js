@@ -5,15 +5,19 @@ document.addEventListener('DOMContentLoaded', () => {
   const messageContainer = document.querySelector('#form-message');
   const localDisplayElements = document.querySelectorAll('.local-name');
   const submitBtn = form.querySelector('button[type="submit"]');
+  const localSelect = document.querySelector('#localSelect');
 
-  const urlParams = new URLSearchParams(window.location.search);
-  const rawLocal = (urlParams.get('local') || 'belcebu').toLowerCase();
+  const getLocalDisplay = (value) => {
+    if (value === 'pecat') return 'EL PECAT';
+    if (value === 'belcebu') return 'BELCEBÚ';
+    return 'BELCEBÚ';
+  };
 
-  const local = rawLocal === 'pecat' ? 'pecat' : 'belcebu';
-  const displayName = local === 'pecat' ? 'EL PECAT' : 'BELCEBÚ';
-
-  localDisplayElements.forEach(el => {
-    el.textContent = displayName;
+  localSelect.addEventListener('change', () => {
+    const displayName = getLocalDisplay(localSelect.value);
+    localDisplayElements.forEach(el => {
+      el.textContent = displayName;
+    });
   });
 
   const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -24,8 +28,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const formData = new FormData(form);
 
+    if (!localSelect.value) {
+      showMessage('Selecciona el local.', 'error');
+      return;
+    }
+
     const payload = {
-      local,
+      local: localSelect.value,
       nombre: String(formData.get('nombre') || '').trim(),
       telefono: String(formData.get('telefono') || '').trim(),
       email: String(formData.get('email') || '').trim(),
@@ -80,6 +89,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
       showMessage(result.message || '¡Participación registrada con éxito! Mucha suerte.', 'success');
       form.reset();
+
+      localDisplayElements.forEach(el => {
+        el.textContent = 'BELCEBÚ';
+      });
 
     } catch (error) {
       console.error(error);

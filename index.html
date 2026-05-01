@@ -87,9 +87,14 @@
     <section class="col form-section">
       <h2 class="section-title">Participa</h2>
 
-      <p class="local-display">
-        Local: <strong class="local-name">BELCEBÚ</strong>
-      </p>
+      <div class="input-group">
+        <label class="label" for="localSelect">Local *</label>
+        <select class="input" id="localSelect" name="localSelect" required>
+          <option value="">Selecciona un local</option>
+          <option value="belcebu">Belcebú</option>
+          <option value="pecat">El Pecat</option>
+        </select>
+      </div>
 
       <form id="participation-form">
         <div class="input-group">
