@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-  const API_URL = "https://YOUR_GOOGLE_APPS_SCRIPT_URL/exec";
+  const API_URL = "https://script.google.com/macros/s/AKfycbzm9d1lbPkS7_kCIClR5EjDTsLa2pZPfiK6SgE6_mpMJ071pQ8gJKnCW2Kl9qQ6F1KL/exec";
 
   const form = document.querySelector('#participation-form');
   const messageContainer = document.querySelector('#form-message');
